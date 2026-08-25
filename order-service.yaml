@@ -6,8 +6,10 @@ spring:
     name: order-service
 
   datasource:
-    url: jdbc:mysql://localhost:3306/order_db
-    username: "root"
+    # Env-overridable so Docker Compose and GKE can point elsewhere without editing this
+    # file. The default keeps a plain local run working with no environment set up.
+    url: ${ORDER_DB_URL:jdbc:mysql://localhost:3306/order_db}
+    username: "${MYSQL_USER:root}"
     password: "${MYSQL_PASSWORD:root}"
     driver-class-name: com.mysql.cj.jdbc.Driver
 
@@ -16,7 +18,34 @@ spring:
       ddl-auto: update
     database-platform: org.hibernate.dialect.MySQLDialect
 
+  kafka:
+    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
+
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+      properties:
+        # Do NOT stamp the Java class name into a __TypeId__ header. Event classes are
+        # duplicated per service, so the producer's package name is meaningless to the
+        # consumer and a type header would make deserialization fail outright. The wire
+        # format is plain JSON, which is what a cross-service contract should be.
+        spring.json.add.type.headers: false
+      # Wait for all in-sync replicas. Single broker locally, but the setting is the one
+      # that matters the moment there is more than one.
+      acks: all
+
+    consumer:
+      group-id: order-service
+      # Read from the beginning for a brand-new group, so a consumer started after a
+      # producer does not silently miss the events already published.
+      auto-offset-reset: earliest
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      # String, not JsonDeserializer: a StringJsonMessageConverter bean turns the payload
+      # into whatever type each @KafkaListener method declares. One consumer can therefore
+      # handle several event types without a container factory per topic.
+      value-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+
 eureka:
   client:
     service-url:
-      defaultZone: http://localhost:8761/eureka/
+      defaultZone: ${EUREKA_SERVICE_URL:http://localhost:8761/eureka/}

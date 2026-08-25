@@ -6,8 +6,10 @@ spring:
     name: inventory-service
 
   datasource:
-    url: jdbc:mysql://localhost:3306/inventory_db
-    username: "root"
+    # Env-overridable so Docker Compose and GKE can point elsewhere without editing this
+    # file. The default keeps a plain local run working with no environment set up.
+    url: ${INVENTORY_DB_URL:jdbc:mysql://localhost:3306/inventory_db}
+    username: "${MYSQL_USER:root}"
     password: "${MYSQL_PASSWORD:root}"
     driver-class-name: com.mysql.cj.jdbc.Driver
 
@@ -16,7 +18,25 @@ spring:
       ddl-auto: update
     database-platform: org.hibernate.dialect.MySQLDialect
 
+  kafka:
+    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
+
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+      properties:
+        # See order-service.yaml: event classes are duplicated per service, so a Java type
+        # header on the wire would break the consumer rather than help it.
+        spring.json.add.type.headers: false
+      acks: all
+
+    consumer:
+      group-id: inventory-service
+      auto-offset-reset: earliest
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+
 eureka:
   client:
     service-url:
-      defaultZone: http://localhost:8761/eureka/
+      defaultZone: ${EUREKA_SERVICE_URL:http://localhost:8761/eureka/}
