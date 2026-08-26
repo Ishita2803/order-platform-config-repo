@@ -1,0 +1,35 @@
+# Gateway configuration for Kubernetes. Served by Config Server when the gateway runs with
+# SPRING_PROFILES_ACTIVE=k8s, layered on top of api-gateway-service.yaml.
+#
+# Written now, in Phase 7, rather than in Phase 15 — the point of the exercise was to prove
+# the routes can be switched by configuration alone. If the discovery mechanism were baked
+# into Java code, moving to Kubernetes would mean editing and redeploying the gateway.
+
+spring:
+  cloud:
+    gateway:
+      server:
+        webmvc:
+          routes:
+
+            # Service DNS instead of lb://. Kubernetes resolves order-service to the
+            # ClusterIP Service and load-balances across its pods, which is exactly what
+            # Eureka plus spring-cloud-loadbalancer was doing locally — so running both
+            # would be duplicate machinery, not redundancy.
+            - id: order-service
+              uri: http://order-service:8081
+              predicates:
+                - Path=/api/orders/**
+
+            - id: inventory-service
+              uri: http://inventory-service:8082
+              predicates:
+                - Path=/api/products/**,/api/inventory/**
+
+eureka:
+  client:
+    # No Eureka server is deployed to the cluster. Left enabled, the client would spend the
+    # pod's startup retrying a host that does not exist.
+    enabled: false
+    register-with-eureka: false
+    fetch-registry: false

@@ -5,7 +5,43 @@ spring:
   application:
     name: api-gateway-service
 
+  cloud:
+    gateway:
+      server:
+        # Note the namespace: this is the MVC/Servlet gateway
+        # (spring-cloud-starter-gateway-server-webmvc), not WebFlux. Every tutorial using
+        # `spring.cloud.gateway.routes` is for the reactive one and silently does nothing here.
+        webmvc:
+          routes:
+
+            - id: order-service
+              # lb:// resolves through Eureka. The k8s profile
+              # (api-gateway-service-k8s.yaml) replaces this with a Service DNS name,
+              # because Kubernetes already does discovery and Eureka is dropped there.
+              uri: lb://order-service
+              predicates:
+                - Path=/api/orders/**
+
+            - id: inventory-service
+              uri: lb://inventory-service
+              predicates:
+                # /api/products/** also matches the bare /api/products, because in Spring's
+                # PathPattern syntax /** matches zero or more segments.
+                - Path=/api/products/**,/api/inventory/**
+
+logging:
+  pattern:
+    # Puts the correlation id on every log line, so one request can be followed across the
+    # gateway's own logs. CorrelationIdFilter is what populates the MDC.
+    level: "%5p [${spring.application.name:},%X{correlationId:-}]"
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,gateway
+
 eureka:
   client:
     service-url:
-      defaultZone: http://localhost:8761/eureka/
+      defaultZone: ${EUREKA_SERVICE_URL:http://localhost:8761/eureka/}
