@@ -5,7 +5,30 @@ spring:
   application:
     name: notification-service
 
+  # No datasource, deliberately. This service has no JPA or MySQL dependency at all, so its
+  # inability to read another service's tables is enforced by the classpath rather than by
+  # good intentions.
+
+  kafka:
+    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
+
+    producer:
+      # Only ever used to republish to a dead-letter topic, so values are plain strings.
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.apache.kafka.common.serialization.StringSerializer
+      acks: all
+
+    consumer:
+      # A DIFFERENT group from order-service. Both services subscribe to the same two
+      # topics, and because their group ids differ, Kafka delivers every event to both.
+      # Sharing a group id would make them compete for messages and each order would be
+      # notified or applied, but not both.
+      group-id: notification-service
+      auto-offset-reset: earliest
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+
 eureka:
   client:
     service-url:
-      defaultZone: http://localhost:8761/eureka/
+      defaultZone: ${EUREKA_SERVICE_URL:http://localhost:8761/eureka/}
