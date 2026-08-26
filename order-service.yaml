@@ -49,3 +49,52 @@ eureka:
   client:
     service-url:
       defaultZone: ${EUREKA_SERVICE_URL:http://localhost:8761/eureka/}
+
+# ---------------------------------------------------------------------------------------
+# Payment: the one synchronous call in the platform, and the only thing Resilience4j has to
+# protect. Everything else goes through Kafka, where the broker already absorbs a slow peer.
+# ---------------------------------------------------------------------------------------
+payment:
+  base-url: ${PAYMENT_BASE_URL:http://localhost:8084}
+  # A blocking call needs a bound. This is an HTTP read timeout rather than Resilience4j's
+  # TimeLimiter, which needs a CompletableFuture to cancel and has nothing to cancel here.
+  connect-timeout-ms: 1000
+  read-timeout-ms: 2000
+
+resilience4j:
+  retry:
+    instances:
+      payment:
+        # 3 attempts total, not 3 retries. Enough to ride out a blip; few enough that a
+        # genuinely dead service is discovered in about a second rather than a minute.
+        max-attempts: 3
+        wait-duration: 200ms
+        enable-exponential-backoff: true
+        exponential-backoff-multiplier: 2
+
+  circuitbreaker:
+    instances:
+      payment:
+        sliding-window-type: COUNT_BASED
+        sliding-window-size: 10
+        # Do not judge the service on one bad call: below this many, the breaker stays shut
+        # regardless of the failure rate.
+        minimum-number-of-calls: 5
+        failure-rate-threshold: 50
+        # Open for 10s, then admit 2 trial calls. If they succeed the breaker closes; if not
+        # it opens again. Short here so the behaviour is demonstrable in an interview.
+        wait-duration-in-open-state: 10s
+        permitted-number-of-calls-in-half-open-state: 2
+        automatic-transition-from-open-to-half-open-enabled: true
+        register-health-indicator: true
+
+management:
+  endpoints:
+    web:
+      exposure:
+        # circuitbreakers exposes the live state (CLOSED / OPEN / HALF_OPEN), which is how
+        # the failure demo is shown rather than asserted.
+        include: health,info,circuitbreakers,circuitbreakerevents
+  health:
+    circuitbreakers:
+      enabled: true

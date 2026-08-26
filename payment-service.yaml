@@ -1,0 +1,23 @@
+server:
+  port: 8084
+
+spring:
+  application:
+    name: payment-service
+
+# A mock: no database, no external provider. Defaults to approving everything; the failure
+# behaviours are switched at runtime through POST /api/payments/behaviour so they can be
+# demonstrated without a restart.
+payment:
+  delay-ms: 0
+
+eureka:
+  client:
+    service-url:
+      defaultZone: ${EUREKA_SERVICE_URL:http://localhost:8761/eureka/}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
