@@ -98,3 +98,21 @@ management:
   health:
     circuitbreakers:
       enabled: true
+
+# Finishes orders that stalled half-way through the Saga -- see OrderReconciliationService.
+#
+# stuck-after must comfortably exceed normal settlement time, or the sweep starts racing the
+# Kafka listener over orders that are still perfectly alive. That race is safe (the @Version
+# column on Order settles it) but it is wasted work and noisy logs.
+#
+# give-up-after is the ceiling. Below it, an unreachable payment provider means "try again
+# next sweep", because cancelling a backlog over a blip turns a temporary outage into
+# permanently lost business. Above it, the order is cancelled and the stock released, because
+# stock cannot be held indefinitely either.
+reconciliation:
+  interval-ms: ${RECONCILIATION_INTERVAL_MS:60000}
+  initial-delay-ms: ${RECONCILIATION_INITIAL_DELAY_MS:60000}
+  stuck-after-ms: ${RECONCILIATION_STUCK_AFTER_MS:300000}
+  give-up-after-ms: ${RECONCILIATION_GIVE_UP_AFTER_MS:3600000}
+  pending-stuck-after-ms: ${RECONCILIATION_PENDING_STUCK_AFTER_MS:600000}
+  batch-size: ${RECONCILIATION_BATCH_SIZE:50}

@@ -40,3 +40,20 @@ eureka:
   client:
     service-url:
       defaultZone: ${EUREKA_SERVICE_URL:http://localhost:8761/eureka/}
+
+# Replays settlements that were dead-lettered, so a transient failure cannot strand stock.
+#
+# Run 1 of the benchmark proved this is needed: 200 orders against one product, nine
+# confirmations exhausted the optimistic-lock retry budget, and their records landed in
+# order.confirmed.DLT. Nothing read that topic, so nine units stayed reserved for ever against
+# orders that were already CONFIRMED.
+#
+# The interval is deliberately unhurried. Consuming a dead letter immediately would retry it
+# while whatever caused the failure is still happening; for lock contention, waiting is the
+# entire fix.
+settlement-recovery:
+  interval-ms: ${SETTLEMENT_RECOVERY_INTERVAL_MS:120000}
+  initial-delay-ms: ${SETTLEMENT_RECOVERY_INITIAL_DELAY_MS:120000}
+  group-id: ${SETTLEMENT_RECOVERY_GROUP_ID:inventory-service-dlt-recovery}
+  poll-timeout-ms: ${SETTLEMENT_RECOVERY_POLL_TIMEOUT_MS:5000}
+  max-records: ${SETTLEMENT_RECOVERY_MAX_RECORDS:100}
