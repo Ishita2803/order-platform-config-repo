@@ -9,8 +9,10 @@ spring:
     # Env-overridable so Docker Compose and GKE can point elsewhere without editing this
     # file. The default keeps a plain local run working with no environment set up.
     url: ${INVENTORY_DB_URL:jdbc:mysql://localhost:3306/inventory_db}
-    username: "${MYSQL_USER:root}"
-    password: "${MYSQL_PASSWORD:root}"
+    # No default: a missing credential must fail loudly, not silently fall back to a
+    # plaintext password committed in git.
+    username: ${MYSQL_USER}
+    password: ${MYSQL_PASSWORD}
     driver-class-name: com.mysql.cj.jdbc.Driver
 
   jpa:
