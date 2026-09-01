@@ -1,0 +1,11 @@
+# order-service configuration for Kubernetes. Served by Config Server when the pod runs
+# with SPRING_PROFILES_ACTIVE=k8s, layered on top of order-service.yaml.
+#
+# Same reasoning as api-gateway-service-k8s.yaml: no discovery-service is deployed to the
+# cluster, so the Eureka client must be off rather than left to retry a host that does not
+# exist for the pod's whole lifetime.
+eureka:
+  client:
+    enabled: false
+    register-with-eureka: false
+    fetch-registry: false
