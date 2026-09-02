@@ -41,6 +41,13 @@ management:
       # Meaningless outside the cluster -- fine locally, since span export failures are
       # background/non-fatal, not a startup or request-path error.
       endpoint: http://otel-collector:4317
+    # spring-boot-starter-opentelemetry auto-configures a METRICS OTLP exporter too,
+    # defaulting to localhost:4318 with nothing listening there -- Part D only wants
+    # traces through the collector, not metrics, so turn that half off explicitly rather
+    # than leave it retrying against nothing every export interval.
+    metrics:
+      export:
+        enabled: false
   endpoints:
     web:
       exposure:

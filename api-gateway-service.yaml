@@ -61,6 +61,11 @@ management:
   otlp:
     tracing:
       endpoint: http://otel-collector:4317
+    # See auth-service.yaml: turns off the auto-configured metrics-over-OTLP exporter,
+    # which otherwise retries against localhost:4318 with nothing listening there.
+    metrics:
+      export:
+        enabled: false
 
 # Must match auth-service's jwt.secret exactly -- both read from the same JWT_SECRET
 # env var, sourced from the same Kubernetes Secret (impulse-secrets).
