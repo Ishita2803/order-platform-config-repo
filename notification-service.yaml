@@ -32,6 +32,21 @@ logging:
   pattern:
     level: "%5p [${spring.application.name:},%X{correlationId:-}]"
 
+management:
+  tracing:
+    enabled: true
+    sampling:
+      probability: 1.0
+  opentelemetry:
+    tracing:
+      export:
+        otlp:
+          endpoint: http://otel-collector:4318/v1/traces
+  otlp:
+    metrics:
+      export:
+        enabled: false
+
 eureka:
   client:
     service-url:

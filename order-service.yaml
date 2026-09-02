@@ -107,6 +107,21 @@ management:
   health:
     circuitbreakers:
       enabled: true
+  tracing:
+    enabled: true
+    sampling:
+      probability: 1.0
+  # NOT management.otlp.tracing.* -- deprecated at error level as of Boot 4.0, silently
+  # does not bind (see Agent.md trap #52).
+  opentelemetry:
+    tracing:
+      export:
+        otlp:
+          endpoint: http://otel-collector:4318/v1/traces
+  otlp:
+    metrics:
+      export:
+        enabled: false
 
 # Finishes orders that stalled half-way through the Saga -- see OrderReconciliationService.
 #
