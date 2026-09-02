@@ -41,6 +41,14 @@ management:
       exposure:
         include: health,info,gateway
 
+gateway:
+  rate-limit:
+    # Per-client-IP, fixed window. Generous enough that the benchmark client (Phase 11) and
+    # any normal interview demo never trips it; tight enough to blunt a script hammering the
+    # one endpoint this project exposes to the public internet (Phase 16).
+    requests-per-window: 50
+    window-seconds: 1
+
 eureka:
   client:
     service-url:
