@@ -43,6 +43,11 @@ spring:
               predicates:
                 - Path=/auth/me
 
+            - id: vendor-service
+              uri: lb://vendor-service
+              predicates:
+                - Path=/api/vendor/**
+
 logging:
   pattern:
     # Puts the correlation id on every log line, so one request can be followed across the
