@@ -60,7 +60,7 @@ management:
   endpoints:
     web:
       exposure:
-        include: health,info,conditions,beans
+        include: health,info,conditions,beans,env
 
 eureka:
   client:
