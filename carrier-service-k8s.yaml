@@ -1,0 +1,7 @@
+# carrier-service configuration for Kubernetes. Served by Config Server when the pod runs
+# with SPRING_PROFILES_ACTIVE=k8s, layered on top of carrier-service.yaml.
+eureka:
+  client:
+    enabled: false
+    register-with-eureka: false
+    fetch-registry: false
