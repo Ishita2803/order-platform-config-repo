@@ -30,6 +30,9 @@ jwt:
 logging:
   pattern:
     level: "%5p [${spring.application.name:},%X{correlationId:-}]"
+  level:
+    io.opentelemetry: DEBUG
+    org.springframework.boot.micrometer: DEBUG
 
 management:
   tracing:
