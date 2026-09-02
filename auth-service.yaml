@@ -36,11 +36,20 @@ management:
     enabled: true
     sampling:
       probability: 1.0
-  otlp:
+  # NOT management.otlp.tracing.* -- that namespace is deprecated at error level as of
+  # Boot 4.0 (silently does not bind at all; confirmed by reading
+  # spring-boot-micrometer-tracing-opentelemetry's own configuration metadata after
+  # traces never once reached Cloud Trace with the old property name). The real property
+  # moved under management.opentelemetry.*, and its default transport is HTTP on 4318,
+  # not gRPC on 4317 -- the endpoint needs the full /v1/traces path, matching the OTLP
+  # HTTP exporter's historical convention.
+  opentelemetry:
     tracing:
-      # Meaningless outside the cluster -- fine locally, since span export failures are
-      # background/non-fatal, not a startup or request-path error.
-      endpoint: http://otel-collector:4317
+      export:
+        otlp:
+          endpoint: http://otel-collector:4318/v1/traces
+  otlp:
+    # This namespace (metrics, not tracing) is NOT deprecated -- confirmed separately.
     # spring-boot-starter-opentelemetry auto-configures a METRICS OTLP exporter too,
     # defaulting to localhost:4318 with nothing listening there -- Part D only wants
     # traces through the collector, not metrics, so turn that half off explicitly rather

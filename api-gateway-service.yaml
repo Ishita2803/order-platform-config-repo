@@ -58,11 +58,18 @@ management:
     enabled: true
     sampling:
       probability: 1.0
-  otlp:
+  # See auth-service.yaml: management.otlp.tracing.* is deprecated at error level as of
+  # Boot 4.0 and silently does not bind. Default transport is HTTP on 4318 with the full
+  # /v1/traces path, not gRPC on 4317.
+  opentelemetry:
     tracing:
-      endpoint: http://otel-collector:4317
-    # See auth-service.yaml: turns off the auto-configured metrics-over-OTLP exporter,
-    # which otherwise retries against localhost:4318 with nothing listening there.
+      export:
+        otlp:
+          endpoint: http://otel-collector:4318/v1/traces
+  otlp:
+    # Metrics namespace is NOT deprecated. Turns off the auto-configured
+    # metrics-over-OTLP exporter, which otherwise retries against localhost:4318 with
+    # nothing listening there.
     metrics:
       export:
         enabled: false
