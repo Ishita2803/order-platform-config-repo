@@ -59,6 +59,11 @@ management:
       export:
         enabled: false
 
+# Phase D5: where CatalogService looks up a sku's owning vendor and unit weight when
+# admin sets a sale price.
+vendor:
+  base-url: ${VENDOR_BASE_URL:http://localhost:8086}
+
 eureka:
   client:
     service-url:
