@@ -68,6 +68,11 @@ eureka:
 vendor:
   base-url: ${VENDOR_BASE_URL:http://localhost:8086}
 
+# Phase D7: where SalesOrderService resolves fulfillment (region-matched warehouse
+# search, partial reservation, shortfall) for a sales order's own lines.
+inventory:
+  base-url: ${INVENTORY_BASE_URL:http://localhost:8082}
+
 payment:
   base-url: ${PAYMENT_BASE_URL:http://localhost:8084}
   # A blocking call needs a bound. This is an HTTP read timeout rather than Resilience4j's
