@@ -63,6 +63,11 @@ eureka:
 # Payment: the one synchronous call in the platform, and the only thing Resilience4j has to
 # protect. Everything else goes through Kafka, where the broker already absorbs a slow peer.
 # ---------------------------------------------------------------------------------------
+# Phase D6: where PurchaseOrderService looks up a sku's owning vendor and unit weight
+# when admin places a stocking purchase order.
+vendor:
+  base-url: ${VENDOR_BASE_URL:http://localhost:8086}
+
 payment:
   base-url: ${PAYMENT_BASE_URL:http://localhost:8084}
   # A blocking call needs a bound. This is an HTTP read timeout rather than Resilience4j's

@@ -20,7 +20,9 @@ spring:
               # because Kubernetes already does discovery and Eureka is dropped there.
               uri: lb://order-service
               predicates:
-                - Path=/api/orders/**
+                # Phase D6: purchase orders live in order-service too (same outbox/saga
+                # machinery, different aggregate), so they share this route.
+                - Path=/api/orders/**,/api/purchase-orders/**
 
             - id: inventory-service
               uri: lb://inventory-service
