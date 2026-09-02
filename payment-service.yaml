@@ -11,6 +11,10 @@ spring:
 payment:
   delay-ms: 0
 
+logging:
+  pattern:
+    level: "%5p [${spring.application.name:},%X{correlationId:-}]"
+
 eureka:
   client:
     service-url:

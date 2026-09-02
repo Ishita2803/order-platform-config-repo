@@ -47,6 +47,13 @@ spring:
       # handle several event types without a container factory per topic.
       value-deserializer: org.apache.kafka.common.serialization.StringDeserializer
 
+logging:
+  pattern:
+    # Puts the correlation id on every log line -- same format as the gateway -- so a
+    # search in Cloud Logging for one id finds this service's lines alongside every other
+    # service's, for the same request.
+    level: "%5p [${spring.application.name:},%X{correlationId:-}]"
+
 eureka:
   client:
     service-url:
