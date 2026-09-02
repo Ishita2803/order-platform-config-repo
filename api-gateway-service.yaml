@@ -48,6 +48,11 @@ spring:
               predicates:
                 - Path=/api/vendor/**
 
+            - id: customer-service
+              uri: lb://customer-service
+              predicates:
+                - Path=/api/customer/**
+
 logging:
   pattern:
     # Puts the correlation id on every log line, so one request can be followed across the

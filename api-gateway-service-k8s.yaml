@@ -41,6 +41,11 @@ spring:
               predicates:
                 - Path=/api/vendor/**
 
+            - id: customer-service
+              uri: http://customer-service:8087
+              predicates:
+                - Path=/api/customer/**
+
 eureka:
   client:
     # No Eureka server is deployed to the cluster. Left enabled, the client would spend the
