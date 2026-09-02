@@ -1,0 +1,52 @@
+server:
+  port: 8085
+
+spring:
+  application:
+    name: auth-service
+
+  datasource:
+    # auth_db is a second schema + app user on the SAME MySQL instance order_db already
+    # lives on (order-mysql), not a new MySQL instance -- Credential is a handful of rows,
+    # and a whole extra mysqld process for that would be operationally wasteful on a
+    # 4 GB data VM already running two databases and a Kafka broker.
+    url: ${AUTH_DB_URL:jdbc:mysql://localhost:3316/auth_db}
+    username: ${MYSQL_USER}
+    password: ${MYSQL_PASSWORD}
+    driver-class-name: com.mysql.cj.jdbc.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    database-platform: org.hibernate.dialect.MySQLDialect
+
+# No default -- a missing secret must fail loudly at startup, not silently sign tokens
+# with a guessable value. Must match the gateway's jwt.secret exactly; both read from
+# the same JWT_SECRET env var, sourced from the same Kubernetes Secret.
+jwt:
+  secret: ${JWT_SECRET}
+  expiry-seconds: 3600
+
+logging:
+  pattern:
+    level: "%5p [${spring.application.name:},%X{correlationId:-}]"
+
+management:
+  tracing:
+    enabled: true
+    sampling:
+      probability: 1.0
+  otlp:
+    tracing:
+      # Meaningless outside the cluster -- fine locally, since span export failures are
+      # background/non-fatal, not a startup or request-path error.
+      endpoint: http://otel-collector:4317
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+
+eureka:
+  client:
+    service-url:
+      defaultZone: ${EUREKA_SERVICE_URL:http://localhost:8761/eureka/}

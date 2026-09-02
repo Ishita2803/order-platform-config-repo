@@ -29,6 +29,20 @@ spring:
                 # PathPattern syntax /** matches zero or more segments.
                 - Path=/api/products/**,/api/inventory/**
 
+            # Only these two exact paths, not a blanket /auth/**. auth-service's
+            # /auth/credentials (used by other services at onboarding time, Phase D2-D4)
+            # is deliberately never reachable from outside the cluster -- same boundary
+            # payment-service already relies on today.
+            - id: auth-service-login
+              uri: lb://auth-service
+              predicates:
+                - Path=/auth/login
+
+            - id: auth-service-me
+              uri: lb://auth-service
+              predicates:
+                - Path=/auth/me
+
 logging:
   pattern:
     # Puts the correlation id on every log line, so one request can be followed across the
@@ -40,6 +54,18 @@ management:
     web:
       exposure:
         include: health,info,gateway
+  tracing:
+    enabled: true
+    sampling:
+      probability: 1.0
+  otlp:
+    tracing:
+      endpoint: http://otel-collector:4317
+
+# Must match auth-service's jwt.secret exactly -- both read from the same JWT_SECRET
+# env var, sourced from the same Kubernetes Secret (impulse-secrets).
+jwt:
+  secret: ${JWT_SECRET}
 
 gateway:
   rate-limit:

@@ -26,6 +26,16 @@ spring:
               predicates:
                 - Path=/api/products/**,/api/inventory/**
 
+            - id: auth-service-login
+              uri: http://auth-service:8085
+              predicates:
+                - Path=/auth/login
+
+            - id: auth-service-me
+              uri: http://auth-service:8085
+              predicates:
+                - Path=/auth/me
+
 eureka:
   client:
     # No Eureka server is deployed to the cluster. Left enabled, the client would spend the
