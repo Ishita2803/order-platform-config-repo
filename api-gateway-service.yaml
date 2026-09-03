@@ -47,6 +47,14 @@ spring:
               predicates:
                 - Path=/auth/me
 
+            # User-management phase: admin-only directory/edit/set-password routes.
+            # Still not a blanket /auth/**, same reasoning as auth-service-login/-me above --
+            # /auth/credentials stays internal-only.
+            - id: auth-service-users
+              uri: lb://auth-service
+              predicates:
+                - Path=/auth/users/**
+
             - id: vendor-service
               uri: lb://vendor-service
               predicates:
@@ -61,6 +69,17 @@ spring:
               uri: lb://carrier-service
               predicates:
                 - Path=/api/carrier/**
+
+            # Billing screen (user-management/storefront phase): the only payment-service
+            # route ever exposed publicly. POST /api/payments (charge), /api/payments/invoices
+            # (internal invoice generation, called by order-service), /behaviour and /reset
+            # (demo controls) stay unrouted -- payment-service remains reachable only
+            # in-cluster for everything except this one read.
+            - id: payment-service-invoices
+              uri: lb://payment-service
+              predicates:
+                - Method=GET
+                - Path=/api/payments/invoices/**
 
 logging:
   pattern:
