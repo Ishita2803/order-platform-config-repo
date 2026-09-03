@@ -49,6 +49,15 @@ logging:
     level: "%5p [${spring.application.name:},%X{correlationId:-}]"
 
 management:
+  health:
+    # Spring Boot auto-configures a mail health indicator that actually opens an SMTP
+    # connection as part of /actuator/health -- which this pod's readiness/liveness
+    # probes hit every 10-15s. Real email is a best-effort side channel here
+    # (EmailNotificationSender already fails open on an SMTP error, same as
+    # PaymentClient.generateInvoice), not something this service's own health should
+    # depend on -- an email provider outage must not take down Kafka consumption too.
+    mail:
+      enabled: false
   tracing:
     enabled: true
     sampling:
