@@ -9,6 +9,22 @@ spring:
   # inability to read another service's tables is enforced by the classpath rather than by
   # good intentions.
 
+  # Real email, via Gmail SMTP by default -- nothing here is Gmail-specific, any SMTP host
+  # works. Credentials come from the impulse-secrets k8s Secret (MAIL_USERNAME/MAIL_PASSWORD),
+  # never committed here. No default password: a missing credential must fail loudly at
+  # startup (JavaMailSender construction), not silently send as an unauthenticated no-op.
+  mail:
+    host: ${MAIL_HOST:smtp.gmail.com}
+    port: ${MAIL_PORT:587}
+    username: ${MAIL_USERNAME:}
+    password: ${MAIL_PASSWORD:}
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+
   kafka:
     bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
 

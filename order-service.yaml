@@ -73,6 +73,10 @@ vendor:
 inventory:
   base-url: ${INVENTORY_BASE_URL:http://localhost:8082}
 
+# Where SalesOrderService/DirectOrderService resolve a customer's email at invoice time.
+customer:
+  base-url: ${CUSTOMER_BASE_URL:http://localhost:8087}
+
 payment:
   base-url: ${PAYMENT_BASE_URL:http://localhost:8084}
   # A blocking call needs a bound. This is an HTTP read timeout rather than Resilience4j's
