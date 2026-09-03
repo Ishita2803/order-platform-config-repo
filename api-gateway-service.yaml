@@ -22,7 +22,9 @@ spring:
               predicates:
                 # Phase D6: purchase orders live in order-service too (same outbox/saga
                 # machinery, different aggregate), so they share this route.
-                - Path=/api/orders/**,/api/purchase-orders/**
+                # Phase D11: so does the profit-report endpoint -- it's order-service's
+                # own read over the orders table, not a new service.
+                - Path=/api/orders/**,/api/purchase-orders/**,/api/analytics/**
 
             - id: inventory-service
               uri: lb://inventory-service
