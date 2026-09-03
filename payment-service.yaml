@@ -11,6 +11,11 @@ spring:
 payment:
   delay-ms: 0
 
+# Phase D8: where InvoiceService looks up a carrier's weight-tier surcharge while
+# generating a sales order's invoice.
+carrier:
+  base-url: ${CARRIER_BASE_URL:http://localhost:8088}
+
 logging:
   pattern:
     level: "%5p [${spring.application.name:},%X{correlationId:-}]"
